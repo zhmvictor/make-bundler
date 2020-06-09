@@ -4,6 +4,7 @@ const parser = require('@babel/parser');
 const traverse = require('@babel/traverse').default;
 const babel = require('@babel/core');
 
+// 分析模块内容
 const moduleAnalyser = (filename) => {
   // 分析入口文件
   const content = fs.readFileSync(filename, 'utf-8');
@@ -34,4 +35,35 @@ const moduleAnalyser = (filename) => {
   }
 };
 
-const moduleInfo = moduleAnalyser('./src/index.js');
+// 依赖图谱，存放所有依赖模块的解析信息
+const makeDependenciesGraph = (entry) => {
+  const entryModule = moduleAnalyser(entry);
+  const graphArray = [entryModule];
+  for(let i = 0; i < graphArray.length; i++) {
+    const item = graphArray[i];
+    const { dependencies } = item;
+    if(dependencies) {
+      for(let j in dependencies) {
+        graphArray.push(
+          moduleAnalyser(dependencies[j])
+        );
+      }
+    }
+  }
+
+  // 将数组转换成对象，打包时会更方便
+  const graph = {};
+  graphArray.forEach(item => {
+    graph[item.filename] = {
+      dependencies: item.dependencies,
+      code: item.code,
+    };
+  });
+
+  return graph;
+};
+
+
+// const moduleInfo = moduleAnalyser('./src/index.js');
+const graphInfo = makeDependenciesGraph('./src/index.js');
+console.log(graphInfo);
