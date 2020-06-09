@@ -63,7 +63,17 @@ const makeDependenciesGraph = (entry) => {
   return graph;
 };
 
+// 生成代码
+// 网页的代码应该放在闭包里执行，避免污染全局环境
+const generateCode = (entry) => {
+  const graph = makeDependenciesGraph(entry);
+  return `
+    (function(){})()
+  `;
+};
+
 
 // const moduleInfo = moduleAnalyser('./src/index.js');
-const graphInfo = makeDependenciesGraph('./src/index.js');
-console.log(graphInfo);
+// const graphInfo = makeDependenciesGraph('./src/index.js');
+const code = generateCode('./src/index.js');
+console.log(code);
